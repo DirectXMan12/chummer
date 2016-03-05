@@ -21307,17 +21307,8 @@ namespace Chummer
 				objPowerControl.UpdatePointsPerLevel();
 			}
 
+            // Hack to make this work like 5th-ed (just don't allocate anything to power points manually)
 			int intMAG = 0;
-			if (_objCharacter.AdeptEnabled && _objCharacter.MagicianEnabled)
-			{
-				// If both Adept and Magician are enabled, this is a Mystic Adept, so use the MAG amount assigned to this portion.
-				intMAG = _objCharacter.MAGAdept;
-			}
-			else
-			{
-				// The character is just an Adept, so use the full value.
-				intMAG = _objCharacter.MAG.TotalValue;
-			}
 
 			// Add any Power Point Improvements to MAG.
 			intMAG += _objImprovementManager.ValueOf(Improvement.ImprovementType.AdeptPowerPoints);
