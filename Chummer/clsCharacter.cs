@@ -4016,19 +4016,11 @@ namespace Chummer
 		{
 			get
 			{
-				// Street Cred = Career Karma / 10, rounded normally (34 = 3 Street Cred, 35 = 4 Street Cred; .5 is rounded up).
-				int intRemainder = (int)(Convert.ToDouble(CareerKarma, GlobalOptions.Instance.CultureInfo) % 10.0);
-				double dblEarned = 0.0;
-				if (intRemainder < 5)
-					dblEarned = Math.Floor(Convert.ToDouble(CareerKarma, GlobalOptions.Instance.CultureInfo) / 10.0);
-				else
-					dblEarned = Math.Ceiling(Convert.ToDouble(CareerKarma, GlobalOptions.Instance.CultureInfo) / 10.0);
-				int intReturn = Convert.ToInt32(dblEarned);
-
-				// Deduct burnt Street Cred.
-				intReturn -= _intBurntStreetCred;
-
-				return intReturn;
+                // Normally:
+                //   Street Cred = Career Karma / 10, rounded normally (34 = 3 Street Cred, 35 = 4 Street Cred; .5 is rounded up).
+                // but:
+                //   if a Shadowrunner falls in the underground, and no me-feeds record it, do they get street cred?
+                return -_intBurntStreetCred;
 			}
 		}
 
@@ -4052,10 +4044,8 @@ namespace Chummer
 			{
 				string strReturn = "";
 
-				strReturn += "(" + LanguageManager.Instance.GetString("String_CareerKarma") + " (" + CareerKarma.ToString() + ")";
 				if (BurntStreetCred != 0)
 					strReturn += " - " + LanguageManager.Instance.GetString("String_BurntStreetCred") + " (" + BurntStreetCred.ToString() + ")";
-				strReturn += ") ÷ 10";
 
 				return strReturn;
 			}
