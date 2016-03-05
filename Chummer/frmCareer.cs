@@ -21310,6 +21310,9 @@ namespace Chummer
             // Hack to make this work like 5th-ed (just don't allocate anything to power points manually)
 			int intMAG = 0;
 
+            if (!_objOptions.ESSLossReducesMaximumOnly)
+                intMAG -= _objCharacter.EssencePenalty;
+
 			// Add any Power Point Improvements to MAG.
 			intMAG += _objImprovementManager.ValueOf(Improvement.ImprovementType.AdeptPowerPoints);
 
