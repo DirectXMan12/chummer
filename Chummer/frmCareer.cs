@@ -21346,6 +21346,12 @@ namespace Chummer
 				lblBiowareESS.Text = string.Format(strFormat, _objCharacter.BiowareEssence);
 				lblEssenceHoleESS.Text = string.Format(strFormat, _objCharacter.EssenceHole);
 
+                // make this do what the comment above latentsource says it's supposed to do
+                if (_objCharacter.MAG.Value <= 0 && _objCharacter.OverrideSpecialAttributeEssenceLoss)
+                {
+                    _objCharacter.MAG.Value = 1;
+                }
+
 				// Reduce a character's MAG and RES from Essence Loss.
 				int intReduction = _objCharacter.ESS.MetatypeMaximum - Convert.ToInt32(Math.Floor(decESS));
 
