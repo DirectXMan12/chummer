@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -7,6 +8,7 @@ namespace Chummer
 	public partial class frmDiceRoller : Form
 	{
 		private readonly frmMain _frmMain;
+        private static DiceRoller roller;
 
 		#region Control Events
 		public frmDiceRoller(frmMain frmMainForm, List<Quality> lstQualities = null, int intDice = 1)
@@ -49,11 +51,12 @@ namespace Chummer
 			cboMethod.DisplayMember = "Name";
 			cboMethod.DataSource = lstMethod;
 			cboMethod.SelectedIndex = 0;
+
+            roller = new DiceRoller(); // TODO(directxman12): store seed in character file?
 		}
 
 		private void cmdRollDice_Click(object sender, EventArgs e)
 		{
-			Random objRandom = new Random();
 			List<int> lstRandom = new List<int>();
 			int intHitCount = 0;
 			int intGlitchCount = 0;
@@ -79,13 +82,13 @@ namespace Chummer
 					int intResult = 0;
 					do
 					{
-						intResult = objRandom.Next(1, 7);
+						intResult = roller.RollOne(6);
 						lstRandom.Add(intResult);
 					} while (intResult == 6);
 				}
 				else
 				{
-					int intResult = objRandom.Next(1, 7);
+					int intResult = roller.RollOne(6);
 					lstRandom.Add(intResult);
 				}
 			}
@@ -165,7 +168,8 @@ namespace Chummer
 
 		private void frmDiceRoller_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			// Remove the Main window's reference to this form.
+            // Remove the Main window's reference to this form.
+            roller.Dispose();
 			_frmMain.RollerWindow = null;
 		}
 
@@ -335,4 +339,45 @@ namespace Chummer
 		}
 		#endregion
 	}
+    public class DiceRoller : IDisposable
+    {
+        private RNGCryptoServiceProvider randomProv;
+
+        public DiceRoller()
+        {
+            this.randomProv = new RNGCryptoServiceProvider();
+        }
+
+        public byte RollOne(byte sides)
+        {
+            if (sides <= 0)
+            {
+                throw new ArgumentOutOfRangeException("sides");
+            }
+
+            // allocate a byte to hold the raw random number
+            byte[] rawRandomNumber = new byte[1];
+
+            do
+            {
+                this.randomProv.GetBytes(rawRandomNumber);
+            } while (!isFairRoll(rawRandomNumber[0], sides));
+
+            return (byte)((rawRandomNumber[0] % sides) + 1);
+        }
+
+        private static bool isFairRoll(byte rollRaw, byte sides)
+        {
+            // as per the MSDN docs example, there are ByteMax / sides
+            // full sets of rolls that can come up, plus potential some
+            // partial sets at the end that we want to skip.  For example,
+            // if max is 10 and sides is 3, we get [0, 1, 2], [3, 4, 5], [6, 7, 8], [9],
+            // so only up to 8 is "fair", since allowing up to 9 would skew more
+            // towards the "1" value, since 9 provides an extra "1".
+            int fullSets = Byte.MaxValue / sides;
+            return rollRaw < sides * fullSets;
+        }
+
+        public void Dispose() => randomProv.Dispose();
+    }
 }
