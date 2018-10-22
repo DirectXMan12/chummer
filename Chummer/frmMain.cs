@@ -157,8 +157,8 @@ namespace Chummer
 		private void mnuNewCritter_Click(object sender, EventArgs e)
 		{
 			Character objCharacter = new Character();
-
-			if (Directory.GetFiles(Path.Combine(Application.StartupPath, "settings"), "*.xml").Count() > 1)
+            var settingsFiles = GlobalOptions.GetSettingsFiles();
+			if (settingsFiles.Count() > 1)
 			{
 				frmSelectSetting frmPickSetting = new frmSelectSetting();
 				frmPickSetting.ShowDialog(this);
@@ -170,10 +170,7 @@ namespace Chummer
 			}
 			else
 			{
-				string strSettingsFile = Directory.GetFiles(Path.Combine(Application.StartupPath, "settings"), "*.xml")[0];
-				strSettingsFile = strSettingsFile.Replace(Path.Combine(Application.StartupPath, "settings"), string.Empty);
-				strSettingsFile = strSettingsFile.Replace(Path.DirectorySeparatorChar, ' ').Trim();
-				objCharacter.SettingsFile = strSettingsFile;
+				objCharacter.SettingsFile = settingsFiles[0].Name;
 			}
 
 			// Override the defaults for the setting.
@@ -452,7 +449,8 @@ namespace Chummer
 		{
 			Character objCharacter = new Character();
 
-			if (Directory.GetFiles(Path.Combine(Application.StartupPath, "settings"), "*.xml").Count() > 1)
+            var settingsFiles = GlobalOptions.GetSettingsFiles();
+			if (settingsFiles.Count() > 1)
 			{
 				frmSelectSetting frmPickSetting = new frmSelectSetting();
 				frmPickSetting.ShowDialog(this);
@@ -464,10 +462,7 @@ namespace Chummer
 			}
 			else
 			{
-				string strSettingsFile = Directory.GetFiles(Path.Combine(Application.StartupPath, "settings"), "*.xml")[0];
-				strSettingsFile = strSettingsFile.Replace(Path.Combine(Application.StartupPath, "settings"), string.Empty);
-				strSettingsFile = strSettingsFile.Replace(Path.DirectorySeparatorChar, ' ').Trim();
-				objCharacter.SettingsFile = strSettingsFile;
+				objCharacter.SettingsFile = settingsFiles[0].Name;
 			}
 			
 			// Show the BP selection window.

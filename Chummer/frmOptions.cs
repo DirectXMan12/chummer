@@ -81,20 +81,15 @@ namespace Chummer
 		{
 			// Populate the list of Settings.
 			List<ListItem> lstSettings = new List<ListItem>();
-			foreach (string strFileName in Directory.GetFiles(Path.Combine(Application.StartupPath, "settings"), "*.xml"))
+			foreach (var settingsFile in GlobalOptions.GetSettingsFiles())
 			{
-				// Remove the path from the file name.
-				string strSettingsFile = strFileName;
-				strSettingsFile = strSettingsFile.Replace(Path.Combine(Application.StartupPath, "settings"), string.Empty);
-				strSettingsFile = strSettingsFile.Replace(Path.DirectorySeparatorChar, ' ').Trim();
-
 				// Load the file so we can get the Setting name.
 				XmlDocument objXmlSetting = new XmlDocument();
-				objXmlSetting.Load(strFileName);
+				objXmlSetting.Load(settingsFile.Path);
 				string strSettingsName = objXmlSetting.SelectSingleNode("/settings/name").InnerText;
 
 				ListItem objItem = new ListItem();
-				objItem.Value = strSettingsFile;
+				objItem.Value = settingsFile.Path;
 				objItem.Name = strSettingsName;
 
 				lstSettings.Add(objItem);

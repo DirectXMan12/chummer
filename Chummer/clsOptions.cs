@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using System.Linq;
 
 // MRUChanged Event Handler.
 public delegate void MRUChangedHandler();
@@ -107,11 +108,50 @@ namespace Chummer
 		public static string _strPDFAppPath = "";
 		public static List<SourcebookInfo> _lstSourcebookInfo = new List<SourcebookInfo>();
 
-		#region Constructor and Instance
-		static GlobalOptions()
+        public static string _settingsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Chummer4e");
+
+        #region Static Settings Stuff
+        /// <summary>
+        /// The directory to use for settings.
+        /// </summary>
+        public static string SettingsDirectory
+        {
+            get
+            {
+                return _settingsDirectory;
+            }
+        }
+
+        // <summary>
+        // Find all settings file full paths and file names.
+        // </summary>
+        public static (string Path, string Name)[] GetSettingsFiles()
+        {
+            string[] fullPaths = Directory.GetFiles(SettingsDirectory, "*.xml");
+            return fullPaths.Select((fullPath, index) =>
+            {
+                string fileName = fullPath.Replace(SettingsDirectory, string.Empty).
+                    Replace(Path.DirectorySeparatorChar, ' ').
+                    Trim();
+                return (Path: fullPath, Name: fileName);
+            }).ToArray();
+        }
+
+        // <summary>
+        // Get the path for a given named settings file.
+        // </summary>
+        public static string GetSettingsFilePath(string name)
+        {
+            return Path.Combine(SettingsDirectory, name);
+        }
+        #endregion
+
+        #region Constructor and Instance
+        static GlobalOptions()
 		{
-			if (!Directory.Exists(Path.Combine(Application.StartupPath, "settings")))
-				Directory.CreateDirectory(Path.Combine(Application.StartupPath, "settings"));
+            // create the user settings directory if it doesn't exist
+			if (!Directory.Exists(SettingsDirectory))
+				Directory.CreateDirectory(SettingsDirectory);
 
 			// Automatic Update.
 			try
@@ -842,12 +882,12 @@ namespace Chummer
 		public CharacterOptions()
 		{
 			// Create the settings directory if it does not exist.
-			if (!Directory.Exists(Path.Combine(Application.StartupPath, "settings")))
-				Directory.CreateDirectory(Path.Combine(Application.StartupPath, "settings"));
+            // TODO(directxman12): support different user vs global settings files?
+			if (!Directory.Exists(GlobalOptions.SettingsDirectory))
+				Directory.CreateDirectory(GlobalOptions.SettingsDirectory);
 
-			// If the default.xml settings file does not exist, attempt to read the settings from the Registry (old storage format), then save them to the default.xml file.
-			string strFilePath = Path.Combine(Application.StartupPath, "settings");
-			strFilePath = Path.Combine(strFilePath, "default.xml");
+            // If the default.xml settings file does not exist, attempt to read the settings from the Registry (old storage format), then save them to the default.xml file.
+            string strFilePath = GlobalOptions.GetSettingsFilePath("default.xml");
 			if (!File.Exists(strFilePath))
 			{
 				_strFileName = "default.xml";
@@ -869,8 +909,7 @@ namespace Chummer
 		/// </summary>
 		public void Save()
 		{
-			string strFilePath = Path.Combine(Application.StartupPath, "settings");
-			strFilePath = Path.Combine(strFilePath, _strFileName);
+			string strFilePath = GlobalOptions.GetSettingsFilePath(_strFileName);
 			FileStream objStream = new FileStream(strFilePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
 			XmlTextWriter objWriter = new XmlTextWriter(objStream, Encoding.Unicode);
 			objWriter.Formatting = Formatting.Indented;
@@ -1163,8 +1202,7 @@ namespace Chummer
 		public bool Load(string strFileName)
 		{
 			_strFileName = strFileName;
-			string strFilePath = Path.Combine(Application.StartupPath, "settings");
-			strFilePath = Path.Combine(strFilePath, _strFileName);
+			string strFilePath = GlobalOptions.GetSettingsFilePath(_strFileName);
 			XmlDocument objXmlDocument = new XmlDocument();
 			try
 			{
